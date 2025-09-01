@@ -1,6 +1,6 @@
 # CMake C++ example project for depthai-core library
 
-CMake example project which serves as a template on how to quickly get started with C++ and the depthai library.
+CMake example project which serves as a template on how to quickly get started with C++ and the [depthai-core](https://github.com/luxonis/depthai-core/) library.
 
 ## Depthai library dependencies
 - cmake >= 3.20
