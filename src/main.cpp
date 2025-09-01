@@ -1,49 +1,35 @@
 #include <iostream>
-
-// include depthai library
-#include <depthai/depthai.hpp>
-
-// include opencv library (Optional, used only for the following example)
+#include <memory>
 #include <opencv2/opencv.hpp>
 
+#include <depthai/depthai.hpp>
 
-int main(){
-    using namespace std;
+int main() {
+  // Create device
+  std::shared_ptr<dai::Device> device = std::make_shared<dai::Device>();
 
-    // Create pipeline
-    dai::Pipeline pipeline;
-    auto colorCam = pipeline.create<dai::node::ColorCamera>();
-    auto xlinkOut = pipeline.create<dai::node::XLinkOut>();
-    xlinkOut->setStreamName("preview");
-    colorCam->setInterleaved(true);
-    colorCam->preview.link(xlinkOut->input);
+  // Create pipeline
+  dai::Pipeline pipeline(device);
 
+  // Create nodes
+  auto cam = pipeline.create<dai::node::Camera>()->build();
+  auto videoQueue =
+      cam->requestOutput(std::make_pair(640, 400))->createOutputQueue();
 
-    try {
-        // Try connecting to device and start the pipeline
-        dai::Device device(pipeline);
+  // Start pipeline
+  pipeline.start();
 
-        // Get output queue
-        auto preview = device.getOutputQueue("preview");
+  while (true) {
+    auto videoIn = videoQueue->get<dai::ImgFrame>();
+    if (videoIn == nullptr)
+      continue;
 
-        cv::Mat frame;
-        while (true) {
+    cv::imshow("video", videoIn->getCvFrame());
 
-            // Receive 'preview' frame from device
-            auto imgFrame = preview->get<dai::ImgFrame>();
-
-            // Show the received 'preview' frame
-            cv::imshow("preview", cv::Mat(imgFrame->getHeight(), imgFrame->getWidth(), CV_8UC3, imgFrame->getData().data()));
-
-            // Wait and check if 'q' pressed
-            if (cv::waitKey(1) == 'q') return 0;
-
-        }
-    } catch (const std::runtime_error& err) {
-        std::cout << err.what() << std::endl;
+    if (cv::waitKey(1) == 'q') {
+      break;
     }
+  }
 
-
-    return 0;
+  return 0;
 }
-
