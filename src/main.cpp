@@ -1,34 +1,43 @@
 #include <iostream>
-#include <memory>
-#include <opencv2/opencv.hpp>
 
+// Includes common necessary includes for development using depthai library
 #include "depthai/depthai.hpp"
 
 int main() {
-    // Create device
-    std::shared_ptr<dai::Device> device = std::make_shared<dai::Device>();
-
+    using namespace std;
     // Create pipeline
-    dai::Pipeline pipeline(device);
+    dai::Pipeline pipeline;
 
-    // Create nodes
-    auto cam = pipeline.create<dai::node::Camera>()->build();
-    // In some cases (IMX586), this requires an 8k screen to be able to see the full resolution at once
-    auto videoQueue = cam->requestFullResolutionOutput()->createOutputQueue();
+    // Define source and output
+    auto camRgb = pipeline.create<dai::node::ColorCamera>();
+    auto xoutRgb = pipeline.create<dai::node::XLinkOut>();
 
-    // Start pipeline
-    pipeline.start();
+    xoutRgb->setStreamName("rgb");
 
-    while(true) {
-        auto videoIn = videoQueue->get<dai::ImgFrame>();
-        if(videoIn == nullptr) continue;
+    // Properties
+    camRgb->setPreviewSize(300, 300);
+    camRgb->setBoardSocket(dai::CameraBoardSocket::CAM_A);
+    camRgb->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
+    camRgb->setInterleaved(false);
+    camRgb->setColorOrder(dai::ColorCameraProperties::ColorOrder::RGB);
 
-        cv::imshow("video", videoIn->getCvFrame());
+    // Linking
+    camRgb->preview.link(xoutRgb->input);
 
-        if(cv::waitKey(1) == 'q') {
-            break;
-        }
+    // Connect to device and start pipeline
+    dai::Device device(pipeline, dai::UsbSpeed::SUPER);
+
+    cout << "Connected cameras: " << device.getConnectedCameraFeatures() << endl;
+
+    if(device.getBootloaderVersion()) {
+        cout << "Bootloader version: " << device.getBootloaderVersion()->toString() << endl;
     }
+
+    // Device name
+    cout << "Device name: " << device.getDeviceName() << " Product name: " << device.getProductName() << endl;
+
+    // Output queue will be used to get the rgb frames from the output defined above
+    auto qRgb = device.getOutputQueue("rgb", 4, false);
 
     return 0;
 }

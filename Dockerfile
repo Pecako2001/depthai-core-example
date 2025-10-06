@@ -22,11 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN update-ca-certificates
 
-RUN pip3 install --no-cache-dir --upgrade "cmake>=3.29"
-
 # Build depthai-core
 WORKDIR /opt
-RUN git clone --branch v3.0.0 --recursive https://github.com/luxonis/depthai-core.git
+RUN git clone --branch v2.29.0 --recursive https://github.com/luxonis/depthai-core.git
 ENV VCPKG_FORCE_SYSTEM_BINARIES=1
 RUN cmake -S depthai-core -B depthai-core/build \
     -DBUILD_SHARED_LIBS=ON \
