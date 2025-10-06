@@ -39,6 +39,22 @@ Make sure to change the `/path/to/install/dir` to a desired location on your fil
 On Linux-based systems, if the `-DCMAKE_INSTALL_PREFIX=/path/to/install/dir` option is omited, `depthai-core` will get installed to `/usr/local`.
 In that case, you don't need to specify the `-DCMAKE_PREFIX_PATH=/path/to/install/dir` option.
 
+### Build with Docker
+
+The repository also ships with a `Dockerfile` that builds `depthai-core` from source and then compiles this example project.
+
+```bash
+docker build -t depthai-core-example .
+```
+
+The resulting image contains the compiled `myapp` binary at `/workspace/build/myapp`. You can launch it directly:
+
+```bash
+docker run --rm depthai-core-example
+```
+
+If you plan to run the application with a connected DepthAI device, pass the appropriate USB device node(s) to the container with `--device` or use `--privileged`.
+
 ## Running
 
 To run the example application 'myapp', navigate to build directory and run 'myapp' executable
