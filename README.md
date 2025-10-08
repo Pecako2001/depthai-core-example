@@ -50,7 +50,13 @@ docker build -t depthai-core-example .
 The resulting image contains the compiled `myapp` binary at `/workspace/build/myapp`. You can launch it directly:
 
 ```bash
-docker run --rm depthai-core-example
+docker run --rm \
+    --privileged \
+    -v /dev/bus/usb:/dev/bus/usb \
+    --device-cgroup-rule='c 189:* rmw' \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    depthai-core-example
 ```
 
 If you plan to run the application with a connected DepthAI device, pass the appropriate USB device node(s) to the container with `--device` or use `--privileged`.
